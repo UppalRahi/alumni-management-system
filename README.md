@@ -45,6 +45,12 @@ A modern, full-featured alumni network platform built with vanilla JavaScript, S
 - **Icons**: Font Awesome
 - **Architecture**: Modular JavaScript with dynamic component loading
 
+## 🌐 Live Demo
+
+**🚀 Try it live**: [https://uppalrahi.github.io/alumni-management-system/](https://uppalrahi.github.io/alumni-management-system/)
+
+Explore all features including authentication, profile management, alumni network, and interactive dashboard!
+
 ## 🚀 Quick Start
 
 ### 1. Clone the Repository
