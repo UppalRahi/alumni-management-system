@@ -2,13 +2,14 @@
   "name": "alumni-network-platform",
   "version": "1.0.0",
   "description": "A comprehensive alumni network management system built with HTML, CSS, JavaScript, and Supabase",
-  "main": "index-modular.html",
+  "main": "index.html",
   "scripts": {
     "start": "npx http-server -p 8000 -c-1",
     "dev": "npx http-server -p 8000 -c-1 -o",
     "serve": "python -m http.server 8000",
     "lint": "echo 'No linting configured yet'",
-    "test": "echo 'No tests configured yet'"
+    "test": "echo 'No tests configured yet'",
+    "deploy": "gh-pages -d ."
   },
   "keywords": [
     "alumni",
@@ -23,16 +24,17 @@
   "author": "Alumni Network Team",
   "license": "MIT",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "gh-pages": "^6.1.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/alumni-network-platform.git"
+    "url": "git+https://github.com/uppalrahi/alumni-management-system.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/alumni-network-platform/issues"
+    "url": "https://github.com/uppalrahi/alumni-management-system/issues"
   },
-  "homepage": "https://github.com/your-username/alumni-network-platform#readme",
+  "homepage": "https://uppalrahi.github.io/alumni-management-system/",
   "browserslist": [
     "> 1%",
     "last 2 versions",

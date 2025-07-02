@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Network - Debug Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Alumni Network Debug Information</h1>
+    
+    <div id="status-container">
+        <div class="status info">
+            🔄 Running diagnostics...
+        </div>
+    </div>
+
+    <h2>Debug Results</h2>
+    <pre id="debug-output"></pre>
+
+    <script>
+        async function runDiagnostics() {
+            const statusContainer = document.getElementById('status-container');
+            const debugOutput = document.getElementById('debug-output');
+            
+            let output = '';
+            
+            // Basic environment check
+            output += '=== ENVIRONMENT ===\n';
+            output += `URL: ${window.location.href}\n`;
+            output += `Protocol: ${window.location.protocol}\n`;
+            output += `Host: ${window.location.host}\n`;
+            output += `Pathname: ${window.location.pathname}\n`;
+            output += `User Agent: ${navigator.userAgent}\n\n`;
+            
+            // Check external libraries
+            output += '=== EXTERNAL LIBRARIES ===\n';
+            
+            // Check Supabase
+            let supabaseStatus = '';
+            if (typeof window.supabase !== 'undefined') {
+                supabaseStatus = '✅ Supabase library loaded';
+                statusContainer.innerHTML += '<div class="status success">✅ Supabase library loaded</div>';
+            } else {
+                supabaseStatus = '❌ Supabase library not loaded';
+                statusContainer.innerHTML += '<div class="status error">❌ Supabase library not loaded</div>';
+            }
+            output += `Supabase: ${supabaseStatus}\n`;
+            
+            // Check Chart.js
+            let chartStatus = '';
+            if (typeof window.Chart !== 'undefined') {
+                chartStatus = '✅ Chart.js library loaded';
+                statusContainer.innerHTML += '<div class="status success">✅ Chart.js library loaded</div>';
+            } else {
+                chartStatus = '❌ Chart.js library not loaded';
+                statusContainer.innerHTML += '<div class="status error">❌ Chart.js library not loaded</div>';
+            }
+            output += `Chart.js: ${chartStatus}\n`;
+            
+            // Check Tailwind
+            let tailwindStatus = '';
+            // Better Tailwind detection
+            const testDiv = document.createElement('div');
+            testDiv.className = 'hidden';
+            document.body.appendChild(testDiv);
+            const isHidden = window.getComputedStyle(testDiv).display === 'none';
+            document.body.removeChild(testDiv);
+            
+            if (isHidden) {
+                tailwindStatus = '✅ Tailwind CSS working';
+                statusContainer.innerHTML += '<div class="status success">✅ Tailwind CSS working</div>';
+            } else {
+                tailwindStatus = '❌ Tailwind CSS not working';
+                statusContainer.innerHTML += '<div class="status error">❌ Tailwind CSS not working</div>';
+            }
+            output += `Tailwind: ${tailwindStatus}\n\n`;
+            
+            // Check Service Worker
+            output += '=== SERVICE WORKER ===\n';
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration('/alumni-management-system/sw.js');
+                    if (registration) {
+                        output += '✅ Service Worker registered\n';
+                        statusContainer.innerHTML += '<div class="status success">✅ Service Worker registered</div>';
+                    } else {
+                        output += '⚠️ Service Worker not registered\n';
+                        statusContainer.innerHTML += '<div class="status warning">⚠️ Service Worker not registered</div>';
+                    }
+                } catch (error) {
+                    output += `❌ Service Worker error: ${error.message}\n`;
+                    statusContainer.innerHTML += `<div class="status error">❌ Service Worker error</div>`;
+                }
+            } else {
+                output += '❌ Service Worker not supported\n';
+                statusContainer.innerHTML += '<div class="status error">❌ Service Worker not supported</div>';
+            }
+            output += '\n';
+            
+            // Check local files
+            output += '=== LOCAL FILES STATUS ===\n';
+            const filesToCheck = [
+                'css/style.css',
+                'js/config.js',
+                'js/auth.js',
+                'js/database.js',
+                'js/components.js',
+                'js/ui.js',
+                'js/dashboard.js',
+                'js/network.js',
+                'js/events.js',
+                'js/mentorship.js',
+                'js/analytics.js'
+            ];
+            
+            for (const file of filesToCheck) {
+                try {
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        output += `✅ ${file}\n`;
+                        statusContainer.innerHTML += `<div class="status success">✅ ${file} loaded</div>`;
+                    } else {
+                        output += `❌ ${file} (${response.status})\n`;
+                        statusContainer.innerHTML += `<div class="status error">❌ ${file} failed (${response.status})</div>`;
+                    }
+                } catch (error) {
+                    output += `❌ ${file} (Error: ${error.message})\n`;
+                    statusContainer.innerHTML += `<div class="status error">❌ ${file} failed (${error.message})</div>`;
+                }
+            }
+            
+            output += '\n=== CONSOLE ERRORS ===\n';
+            output += 'Check browser console for additional errors\n';
+            
+            debugOutput.textContent = output;
+        }
+        
+        // Run diagnostics when page loads
+        window.addEventListener('load', runDiagnostics);
+    </script>
+    
+    <!-- Try loading the external libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <p style="margin-top: 30px;">
+        <a href="index.html">← Back to main app</a>
+    </p>
+</body>
+</html>

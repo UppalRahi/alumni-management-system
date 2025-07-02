@@ -62,22 +62,46 @@ async function createTablesIfNeeded() {
 // Manual database connection test
 async function testDatabaseConnection() {
     console.log('🧪 Manual database test started...');
-    alert('🧪 Testing database connection... Check the console for details.');
     
-    // First check if tables exist
-    await createTablesIfNeeded();
+    if (typeof showErrorMessage === 'function') {
+        showErrorMessage('Testing database connection... Check the console for details.', 'info');
+    } else {
+        alert('🧪 Testing database connection... Check the console for details.');
+    }
     
-    // Then check setup
-    const dbOK = await checkDatabaseSetup();
-    
-    if (!dbOK) {
-        // Show detailed setup instructions
-        const setupInstructions = `
-🛠️ DATABASE SETUP REQUIRED
+    try {
+        // Test basic Supabase connection
+        if (!isSupabaseConnected()) {
+            throw new Error('Supabase is not properly connected');
+        }
+        
+        // Test authentication system
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            console.warn('⚠️ Auth session check warning:', sessionError);
+        } else {
+            console.log('✅ Auth system accessible');
+        }
+        
+        // First check if tables exist
+        await createTablesIfNeeded();
+        
+        // Then check setup
+        const dbOK = await checkDatabaseSetup();
+        
+        if (!dbOK) {
+            // Show setup instructions
+            if (typeof showErrorMessage === 'function') {
+                showErrorMessage('Database tables need to be created. Check console for setup instructions.', 'warning');
+            }
+            
+            // Show detailed setup instructions in console
+            console.log(`
+DATABASE SETUP REQUIRED
 
 Please run these SQL commands in your Supabase SQL Editor:
 
-1️⃣ CREATE PROFILES TABLE:
+1. CREATE PROFILES TABLE:
 CREATE TABLE IF NOT EXISTS profiles (
     id uuid REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     full_name text,
@@ -98,6 +122,34 @@ CREATE TABLE IF NOT EXISTS profiles (
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
+
+2. SET UP ROW LEVEL SECURITY:
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+3. CREATE POLICIES:
+CREATE POLICY "Users can view all profiles" ON profiles FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+Go to: https://supabase.com/dashboard/project/yrmvtofxeeqcuxihgdgv/sql
+            `);
+        } else {
+            console.log('✅ Database test completed successfully!');
+            if (typeof showErrorMessage === 'function') {
+                showErrorMessage('Database connection test successful!', 'success');
+            } else {
+                alert('✅ Database connection test successful!');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Database test failed:', error);
+        if (typeof showErrorMessage === 'function') {
+            showErrorMessage('Database test failed: ' + error.message, 'error');
+        } else {
+            alert('❌ Database test failed: ' + error.message);
+        }
+    }
 
 2️⃣ ENABLE ROW LEVEL SECURITY:
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;

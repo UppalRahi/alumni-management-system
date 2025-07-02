@@ -1,5 +1,32 @@
 // Authentication functions
 
+// Initialize the application
+function initializeApp() {
+    console.log('🚀 Initializing Alumni Network App...');
+    
+    // Check if user is already logged in
+    checkAuthStatus();
+    
+    // Set up event listeners
+    setupEventListeners();
+    
+    console.log('✅ App initialized successfully');
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Add any global event listeners here
+    document.addEventListener('click', function(e) {
+        // Close dropdowns when clicking outside
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(dropdown => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    });
+}
+
 // Toggle between login and signup forms
 function toggleAuthMode() {
     const loginForm = document.getElementById('login-form');
@@ -30,29 +57,41 @@ async function signIn(event) {
     try {
         console.log('🔐 Attempting sign in...');
         
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
+        const result = await withSupabaseErrorHandling(
+            () => supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            }),
+            'Sign in failed'
+        );
         
-        if (error) {
-            console.error('❌ Sign in error:', error);
-            alert('Sign in failed: ' + error.message);
+        if (result.error) {
+            console.error('❌ Sign in error:', result.error);
+            if (typeof showErrorMessage === 'function') {
+                showErrorMessage('Sign in failed: ' + result.error.message);
+            } else {
+                alert('Sign in failed: ' + result.error.message);
+            }
             return;
         }
         
-        console.log('✅ Sign in successful:', data);
-        currentUser = data.user;
+        console.log('✅ Sign in successful:', result.data);
+        currentUser = result.data.user;
         
         // Load user profile
         await loadUserProfile();
         
         // Show main app
         showMainApp();
+        showMainApp();
         
     } catch (err) {
         console.error('❌ Sign in exception:', err);
-        alert('Sign in failed: ' + err.message);
+        if (typeof showErrorMessage === 'function') {
+            showErrorMessage('Sign in failed: ' + err.message);
+        } else {
+            alert('Sign in failed: ' + err.message);
+        }
     } finally {
         // Reset button state
         loginBtn.style.display = 'inline';
@@ -407,26 +446,22 @@ async function checkAuthStatus() {
     try {
         console.log('🔍 Checking auth status...');
         
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (error) {
-            console.error('❌ Auth status check error:', error);
-            showAuthSection();
-            return;
-        }
-        
-        if (user) {
-            console.log('✅ User is signed in:', user);
-            currentUser = user;
+        if (session) {
+            console.log('✅ User already logged in');
+            currentUser = session.user;
             await loadUserProfile();
             showMainApp();
         } else {
-            console.log('👤 No user signed in');
+            console.log('ℹ️ No active session, showing login');
             showAuthSection();
         }
-        
-    } catch (err) {
-        console.error('❌ Auth status check exception:', err);
+    } catch (error) {
+        console.error('❌ Error checking auth status:', error);
         showAuthSection();
     }
 }
+
+// Initialize the app
+initializeApp();

@@ -6,6 +6,29 @@
     <title>Alumni Network Platform</title>
     
     <!-- External Libraries -->
+    <script>
+        // Debug information for GitHub Pages
+        console.log('🌐 Loading from:', window.location.href);
+        console.log('📍 Base URL:', window.location.origin + window.location.pathname);
+        
+        // Register service worker for better caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/alumni-management-system/sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+        
+        // Check if external libraries load successfully
+        window.addEventListener('error', function(e) {
+            console.error('❌ Resource loading error:', e.target.src || e.target.href, e.message);
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -279,15 +302,115 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="js/config.js"></script>
-    <script src="js/database.js"></script>
-    <script src="js/components.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/network.js"></script>
-    <script src="js/events.js"></script>
-    <script src="js/mentorship.js"></script>
-    <script src="js/analytics.js"></script>
+    <script>
+        // Wait for all external libraries to load before loading our modules
+        window.addEventListener('load', function() {
+            // Check if all required libraries are loaded
+            if (typeof window.supabase === 'undefined') {
+                console.error('❌ Supabase not loaded');
+                document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial; background: #f8d7da; color: #721c24; border-radius: 5px; margin: 20px;"><h2>⚠️ Loading Error</h2><p>External libraries failed to load. This might be due to:</p><ul style="text-align: left; display: inline-block;"><li>Internet connection issues</li><li>CDN blocking by browser/network</li><li>JavaScript disabled</li></ul><button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">🔄 Refresh Page</button> <button onclick="window.open(\'debug.html\')" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">🔧 Debug Info</button></div>';
+                return;
+            }
+            
+            // Load modules in correct order
+            const scripts = [
+                'js/error-handling.js',
+                'js/config.js',
+                'js/database.js',
+                'js/components.js',
+                'js/auth.js',
+                'js/ui.js',
+                'js/dashboard.js',
+                'js/network.js',
+                'js/events.js',
+                'js/mentorship.js',
+                'js/analytics.js'
+            ];
+            
+            let loadedScripts = 0;
+            const totalScripts = scripts.length;
+            
+            // Show loading progress
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-progress';
+            loadingDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #007bff; color: white; text-align: center; padding: 10px; z-index: 9999; font-family: Arial;';
+            loadingDiv.innerHTML = `<div>Loading Alumni Network... <span id="progress">(0/${totalScripts})</span></div><div style="background: rgba(255,255,255,0.3); height: 4px; margin-top: 5px; border-radius: 2px;"><div id="progress-bar" style="background: white; height: 100%; width: 0%; border-radius: 2px; transition: width 0.3s;"></div></div>`;
+            document.body.insertBefore(loadingDiv, document.body.firstChild);
+            
+            function updateProgress() {
+                const progressSpan = document.getElementById('progress');
+                const progressBar = document.getElementById('progress-bar');
+                if (progressSpan) progressSpan.textContent = `(${loadedScripts}/${totalScripts})`;
+                if (progressBar) progressBar.style.width = `${(loadedScripts / totalScripts) * 100}%`;
+            }
+            
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        console.log(`✅ Loaded: ${src}`);
+                        loadedScripts++;
+                        updateProgress();
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error(`❌ Failed to load: ${src}`);
+                        reject(new Error(`Failed to load ${src}`));
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+            
+            // Load scripts sequentially
+            async function loadAllScripts() {
+                try {
+                    for (const script of scripts) {
+                        await loadScript(script);
+                    }
+                    
+                    // Hide loading indicator
+                    const loadingElement = document.getElementById('loading-progress');
+                    if (loadingElement) {
+                        loadingElement.style.opacity = '0';
+                        setTimeout(() => loadingElement.remove(), 300);
+                    }
+                    
+                    console.log('✅ All modules loaded successfully');
+                    
+                    // Initialize error handling first
+                    if (typeof initializeErrorHandling === 'function') {
+                        initializeErrorHandling();
+                    }
+                    
+                    // Initialize the app after all scripts are loaded
+                    if (typeof initializeApp === 'function') {
+                        initializeApp();
+                    } else {
+                        console.error('❌ initializeApp function not found');
+                        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial;"><h2>🚨 Initialization Error</h2><p>App initialization failed. Please refresh the page.</p><button onclick="location.reload()">🔄 Refresh Page</button></div>';
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading modules:', error);
+                    
+                    // Hide loading indicator
+                    const loadingElement = document.getElementById('loading-progress');
+                    if (loadingElement) loadingElement.remove();
+                    
+                    document.body.innerHTML = `
+                        <div style="padding: 20px; text-align: center; font-family: Arial; background: #f8d7da; color: #721c24; border-radius: 5px; margin: 20px;">
+                            <h2>🚨 Loading Error</h2>
+                            <p>Failed to load application modules:</p>
+                            <p style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 3px; font-family: monospace;">${error.message}</p>
+                            <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px;">🔄 Refresh Page</button>
+                            <button onclick="window.open('debug.html')" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px;">🔧 Debug Info</button>
+                        </div>
+                    `;
+                }
+            }
+            
+            loadAllScripts();
+        });
+    </script>
 </body>
 </html>
