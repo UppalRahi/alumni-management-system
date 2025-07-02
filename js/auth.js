@@ -1,14 +1,47 @@
 // Authentication functions
 
 // Initialize the application
-function initializeApp() {
+async function initializeApp() {
     console.log('🚀 Initializing Alumni Network App...');
+    
+    // Load page components first
+    if (typeof initializeComponents === 'function') {
+        try {
+            await initializeComponents();
+            console.log('✅ Components loaded successfully');
+        } catch (error) {
+            console.error('❌ Error loading components:', error);
+        }
+    }
     
     // Check if user is already logged in
     checkAuthStatus();
     
     // Set up event listeners
     setupEventListeners();
+    
+    // Initialize UI components
+    if (typeof initializeUIComponents === 'function') {
+        initializeUIComponents();
+    }
+    
+    // Set up auth state change listener
+    if (supabase && supabase.auth && typeof supabase.auth.onAuthStateChange === 'function') {
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log('🔄 Auth state changed:', event, session);
+            
+            if (event === 'SIGNED_IN' && session) {
+                currentUser = session.user;
+                loadUserProfile().then(() => {
+                    showMainApp();
+                });
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                currentUserProfile = null;
+                showAuthSection();
+            }
+        });
+    }
     
     console.log('✅ App initialized successfully');
 }

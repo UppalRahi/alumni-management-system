@@ -9,7 +9,27 @@ window.addEventListener('error', function(event) {
 // Global promise rejection handler
 window.addEventListener('unhandledrejection', function(event) {
     console.error('🚨 Unhandled promise rejection:', event.reason);
-    showErrorMessage('A network error occurred. Please check your connection.');
+    
+    // Don't show error message for certain types of expected errors
+    const errorMessage = event.reason?.message || event.reason?.toString() || 'Unknown error';
+    
+    // Skip showing user messages for these common/expected errors
+    if (errorMessage.includes('fetch') || 
+        errorMessage.includes('NetworkError') ||
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('Load failed') ||
+        errorMessage.includes('Component load') ||
+        errorMessage.includes('Network request failed')) {
+        console.log('ℹ️ Network error suppressed from user notification');
+        return;
+    }
+    
+    // Only show critical errors to users
+    if (errorMessage.includes('Database') || 
+        errorMessage.includes('Authentication') || 
+        errorMessage.includes('Permission')) {
+        showErrorMessage('An error occurred. Please refresh the page if problems persist.');
+    }
 });
 
 // Show error messages to user

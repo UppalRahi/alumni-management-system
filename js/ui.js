@@ -23,6 +23,8 @@ function showMainApp() {
 
 // Show specific section
 function showSection(sectionName) {
+    console.log(`🔄 Switching to section: ${sectionName}`);
+    
     // Cleanup dashboard charts if switching away from dashboard
     if (typeof cleanupDashboardCharts === 'function') {
         cleanupDashboardCharts();
@@ -31,7 +33,12 @@ function showSection(sectionName) {
     // Hide all sections
     const sections = ['dashboard-section', 'profile-section', 'network-section', 'events-section', 'mentorship-section', 'analytics-section'];
     sections.forEach(sectionId => {
-        document.getElementById(sectionId).classList.add('hidden');
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.classList.add('hidden');
+        } else {
+            console.warn(`⚠️ Section element not found: ${sectionId}`);
+        }
     });
     
     // Remove active class from all nav items
@@ -41,7 +48,14 @@ function showSection(sectionName) {
     });
     
     // Show selected section
-    document.getElementById(sectionName + '-section').classList.remove('hidden');
+    const targetSection = document.getElementById(sectionName + '-section');
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+        console.log(`✅ Section shown: ${sectionName}`);
+    } else {
+        console.error(`❌ Target section not found: ${sectionName}-section`);
+        return;
+    }
     
     // Add active class to current nav item
     const currentNavItem = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
@@ -49,34 +63,64 @@ function showSection(sectionName) {
         currentNavItem.classList.add('active');
     }
     
-    // Load section-specific data
-    switch(sectionName) {
-        case 'dashboard':
-            loadDashboardData();
-            break;
-        case 'profile':
-            // Ensure profile data is loaded when showing profile section
-            if (currentUserProfile) {
-                // Add a small delay to ensure the profile component is fully loaded
-                setTimeout(() => {
-                    console.log('🔄 Profile section loaded, updating UI...');
-                    initializeLocationDropdown();
-                    updateProfileUI();
-                }, 100);
-            }
-            break;
-        case 'network':
-            loadAlumniNetwork();
-            break;
-        case 'events':
-            loadEvents();
-            break;
-        case 'mentorship':
-            loadMentorshipData();
-            break;
-        case 'analytics':
-            loadAnalyticsData();
-            break;
+    // Load section-specific data with error handling
+    try {
+        switch(sectionName) {
+            case 'dashboard':
+                if (typeof loadDashboardData === 'function') {
+                    loadDashboardData();
+                } else {
+                    console.warn('⚠️ loadDashboardData function not available');
+                }
+                break;
+            case 'profile':
+                // Ensure profile data is loaded when showing profile section
+                if (currentUserProfile) {
+                    // Add a small delay to ensure the profile component is fully loaded
+                    setTimeout(() => {
+                        console.log('🔄 Profile section loaded, updating UI...');
+                        if (typeof initializeLocationDropdown === 'function') {
+                            initializeLocationDropdown();
+                        }
+                        if (typeof updateProfileUI === 'function') {
+                            updateProfileUI();
+                        }
+                    }, 100);
+                } else {
+                    console.log('ℹ️ No profile data available yet');
+                }
+                break;
+            case 'network':
+                if (typeof loadAlumniNetwork === 'function') {
+                    loadAlumniNetwork();
+                } else {
+                    console.warn('⚠️ loadAlumniNetwork function not available');
+                }
+                break;
+            case 'events':
+                if (typeof loadEvents === 'function') {
+                    loadEvents();
+                } else {
+                    console.warn('⚠️ loadEvents function not available');
+                }
+                break;
+            case 'mentorship':
+                if (typeof loadMentorshipData === 'function') {
+                    loadMentorshipData();
+                } else {
+                    console.warn('⚠️ loadMentorshipData function not available');
+                }
+                break;
+            case 'analytics':
+                if (typeof loadAnalyticsData === 'function') {
+                    loadAnalyticsData();
+                } else {
+                    console.warn('⚠️ loadAnalyticsData function not available');
+                }
+                break;
+        }
+    } catch (error) {
+        console.error(`❌ Error loading section ${sectionName}:`, error);
     }
 }
 
@@ -425,7 +469,9 @@ function handleDatabaseError(error, operation = 'database operation') {
     alert(`${operation} failed: ${error.message}`);
 }
 
-// Initialize application
+// Initialize application - this is now handled by initializeApp() in auth.js
+// Keeping this commented out to avoid conflicts
+/*
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Alumni Network Platform initializing...');
     
@@ -461,6 +507,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize location dropdown handling
     initializeLocationDropdown();
 });
+*/
+
+// Initialize UI-specific functionality when needed
+function initializeUIComponents() {
+    // Close modal when clicking outside
+    const eventModal = document.getElementById('event-modal');
+    if (eventModal) {
+        eventModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideCreateEventModal();
+            }
+        });
+    }
+    
+    // Initialize location dropdown handling
+    initializeLocationDropdown();
+}
 
 // Location dropdown handling
 function initializeLocationDropdown() {
