@@ -82,10 +82,21 @@ async function signIn(event) {
     const password = document.getElementById('login-password').value;
     const loginBtn = document.getElementById('login-btn-text');
     const loginLoading = document.getElementById('login-loading');
+    const form = event.target;
     
-    // Show loading state
-    loginBtn.style.display = 'none';
-    loginLoading.classList.remove('hidden');
+    // Add loading animation to the form
+    form.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    form.style.transform = 'scale(0.98)';
+    form.style.opacity = '0.7';
+    
+    // Show loading state with animation
+    loginBtn.style.transition = 'opacity 0.3s ease';
+    loginBtn.style.opacity = '0';
+    setTimeout(() => {
+        loginBtn.style.display = 'none';
+        loginLoading.classList.remove('hidden');
+        loginLoading.style.animation = 'pulse 1.5s ease-in-out infinite';
+    }, 300);
     
     try {
         console.log('🔐 Attempting sign in...');
@@ -100,8 +111,15 @@ async function signIn(event) {
         
         if (result.error) {
             console.error('❌ Sign in error:', result.error);
+            
+            // Show error with shake animation
+            form.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => form.style.animation = '', 500);
+            
             if (typeof showErrorMessage === 'function') {
                 showErrorMessage('Sign in failed: ' + result.error.message);
+            } else if (typeof AnimationUtils !== 'undefined') {
+                AnimationUtils.showToast('❌ Sign in failed: ' + result.error.message, 'error', 4000);
             } else {
                 alert('Sign in failed: ' + result.error.message);
             }
@@ -111,24 +129,54 @@ async function signIn(event) {
         console.log('✅ Sign in successful:', result.data);
         currentUser = result.data.user;
         
+        // Success animation
+        form.style.transform = 'scale(1.02)';
+        form.style.opacity = '1';
+        form.style.background = 'linear-gradient(135deg, #10B981, #059669)';
+        form.style.color = 'white';
+        
+        // Add success particles
+        if (typeof AnimationUtils !== 'undefined') {
+            AnimationUtils.createParticleExplosion(form, 20);
+            AnimationUtils.showToast('🎉 Welcome back!', 'success', 3000);
+        }
+        
         // Load user profile
         await loadUserProfile();
         
-        // Show main app
-        showMainApp();
-        showMainApp();
+        // Show main app with enhanced transition
+        setTimeout(() => {
+            showMainApp();
+        }, 1000);
         
     } catch (err) {
         console.error('❌ Sign in exception:', err);
+        
+        // Error animation
+        form.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => form.style.animation = '', 500);
+        
         if (typeof showErrorMessage === 'function') {
             showErrorMessage('Sign in failed: ' + err.message);
+        } else if (typeof AnimationUtils !== 'undefined') {
+            AnimationUtils.showToast('❌ Sign in failed: ' + err.message, 'error', 4000);
         } else {
             alert('Sign in failed: ' + err.message);
         }
     } finally {
-        // Reset button state
-        loginBtn.style.display = 'inline';
+        // Reset button state with animation
+        loginLoading.style.animation = '';
         loginLoading.classList.add('hidden');
+        loginBtn.style.display = 'inline';
+        loginBtn.style.opacity = '1';
+        
+        // Reset form state
+        setTimeout(() => {
+            form.style.transform = 'scale(1)';
+            form.style.opacity = '1';
+            form.style.background = '';
+            form.style.color = '';
+        }, 1500);
     }
 }
 
@@ -142,10 +190,21 @@ async function signUp(event) {
     const year = document.getElementById('signup-year').value;
     const signupBtn = document.getElementById('signup-btn-text');
     const signupLoading = document.getElementById('signup-loading');
+    const form = event.target;
     
-    // Show loading state
-    signupBtn.style.display = 'none';
-    signupLoading.classList.remove('hidden');
+    // Add loading animation to the form
+    form.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    form.style.transform = 'scale(0.98)';
+    form.style.opacity = '0.7';
+    
+    // Show loading state with animation
+    signupBtn.style.transition = 'opacity 0.3s ease';
+    signupBtn.style.opacity = '0';
+    setTimeout(() => {
+        signupBtn.style.display = 'none';
+        signupLoading.classList.remove('hidden');
+        signupLoading.style.animation = 'pulse 1.5s ease-in-out infinite';
+    }, 300);
     
     try {
         console.log('📝 Attempting sign up...');
@@ -164,7 +223,16 @@ async function signUp(event) {
         
         if (error) {
             console.error('❌ Sign up error:', error);
-            alert('Sign up failed: ' + error.message);
+            
+            // Show error with shake animation
+            form.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => form.style.animation = '', 500);
+            
+            if (typeof AnimationUtils !== 'undefined') {
+                AnimationUtils.showToast('❌ Sign up failed: ' + error.message, 'error', 4000);
+            } else {
+                alert('Sign up failed: ' + error.message);
+            }
             return;
         }
         
@@ -172,6 +240,17 @@ async function signUp(event) {
         
         if (data.user) {
             currentUser = data.user;
+            
+            // Success animation
+            form.style.transform = 'scale(1.02)';
+            form.style.opacity = '1';
+            form.style.background = 'linear-gradient(135deg, #10B981, #059669)';
+            form.style.color = 'white';
+            
+            // Add success particles
+            if (typeof AnimationUtils !== 'undefined') {
+                AnimationUtils.createParticleExplosion(form, 25);
+            }
             
             // Try to create profile in profiles table
             console.log('📊 Creating user profile...');
@@ -192,9 +271,18 @@ async function signUp(event) {
                 // Check if it's an RLS policy error
                 if (profileError.code === '42501' || profileError.message.includes('row-level security')) {
                     console.log('🔧 RLS policy issue detected. Please set up your database tables and policies.');
-                    alert(`⚠️ Database Setup Required!\n\nYour account was created successfully, but the profiles table needs proper Row Level Security (RLS) policies for full functionality.\n\nPlease run this SQL in your Supabase dashboard:\n\n-- Enable RLS\nALTER TABLE profiles ENABLE ROW LEVEL SECURITY;\n\n-- Allow users to insert their own profile\nCREATE POLICY "Users can insert own profile" ON profiles\nFOR INSERT WITH CHECK (auth.uid() = id);\n\n-- Allow users to view their own profile\nCREATE POLICY "Users can view own profile" ON profiles\nFOR SELECT USING (auth.uid() = id);\n\n-- Allow users to update their own profile\nCREATE POLICY "Users can update own profile" ON profiles\nFOR UPDATE USING (auth.uid() = id);\n\nFor now, the app will work in demo mode.`);
+                    
+                    if (typeof AnimationUtils !== 'undefined') {
+                        AnimationUtils.showToast('⚠️ Database Setup Required! Check console for details.', 'warning', 6000);
+                    } else {
+                        alert(`⚠️ Database Setup Required!\n\nYour account was created successfully, but the profiles table needs proper Row Level Security (RLS) policies for full functionality.\n\nPlease run this SQL in your Supabase dashboard:\n\n-- Enable RLS\nALTER TABLE profiles ENABLE ROW LEVEL SECURITY;\n\n-- Allow users to insert their own profile\nCREATE POLICY "Users can insert own profile" ON profiles\nFOR INSERT WITH CHECK (auth.uid() = id);\n\n-- Allow users to view their own profile\nCREATE POLICY "Users can view own profile" ON profiles\nFOR SELECT USING (auth.uid() = id);\n\n-- Allow users to update their own profile\nCREATE POLICY "Users can update own profile" ON profiles\nFOR UPDATE USING (auth.uid() = id);\n\nFor now, the app will work in demo mode.`);
+                    }
                 } else {
-                    alert(`Account created successfully!\n\nHowever, there was an issue creating your profile: ${profileError.message}\n\nThe app will work in demo mode for now.`);
+                    if (typeof AnimationUtils !== 'undefined') {
+                        AnimationUtils.showToast(`✅ Account created! Profile setup issue: ${profileError.message}`, 'warning', 5000);
+                    } else {
+                        alert(`Account created successfully!\n\nHowever, there was an issue creating your profile: ${profileError.message}\n\nThe app will work in demo mode for now.`);
+                    }
                 }
                 
                 // For now, continue without profile creation for demo purposes
@@ -207,8 +295,14 @@ async function signUp(event) {
                 };
                 updateProfileUI();
                 
-                // Show main app (no additional success message since we already showed one above)
-                showMainApp();
+                // Show main app with celebration animation
+                if (typeof AnimationUtils !== 'undefined') {
+                    AnimationUtils.showToast('🎉 Welcome to AlumniNet!', 'success', 4000);
+                }
+                
+                setTimeout(() => {
+                    showMainApp();
+                }, 1500);
                 return;
             }
             
@@ -217,23 +311,53 @@ async function signUp(event) {
             // Load the newly created profile
             await loadUserProfile();
             
-            // Show success message
-            alert('Account created successfully! Welcome to AlumniNet!');
+            // Show success message with celebration
+            if (typeof AnimationUtils !== 'undefined') {
+                AnimationUtils.showToast('🎉 Account created successfully! Welcome to AlumniNet!', 'success', 5000);
+            } else {
+                alert('Account created successfully! Welcome to AlumniNet!');
+            }
             
-            // Show main app
-            showMainApp();
+            // Show main app with delay for celebration
+            setTimeout(() => {
+                showMainApp();
+            }, 2000);
         } else {
             console.log('📧 Check your email to confirm your account');
-            alert('Please check your email to confirm your account before signing in.');
+            
+            if (typeof AnimationUtils !== 'undefined') {
+                AnimationUtils.showToast('📧 Please check your email to confirm your account', 'info', 5000);
+            } else {
+                alert('Please check your email to confirm your account before signing in.');
+            }
         }
         
     } catch (err) {
         console.error('❌ Sign up exception:', err);
-        alert('Sign up failed: ' + err.message);
+        
+        // Error animation
+        form.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => form.style.animation = '', 500);
+        
+        if (typeof AnimationUtils !== 'undefined') {
+            AnimationUtils.showToast('❌ Sign up failed: ' + err.message, 'error', 4000);
+        } else {
+            alert('Sign up failed: ' + err.message);
+        }
     } finally {
-        // Reset button state
-        signupBtn.style.display = 'inline';
+        // Reset button state with animation
+        signupLoading.style.animation = '';
         signupLoading.classList.add('hidden');
+        signupBtn.style.display = 'inline';
+        signupBtn.style.opacity = '1';
+        
+        // Reset form state
+        setTimeout(() => {
+            form.style.transform = 'scale(1)';
+            form.style.opacity = '1';
+            form.style.background = '';
+            form.style.color = '';
+        }, 2500);
     }
 }
 
