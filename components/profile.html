@@ -1,0 +1,180 @@
+<div class="bg-white rounded-lg shadow-md p-8">
+    <h2 class="text-2xl font-bold mb-6">My Profile</h2>
+    <form onsubmit="updateProfile(event)">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                <input type="text" id="profile-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                <input type="email" id="profile-email" disabled class="w-full px-3 py-2 border rounded-lg bg-gray-100">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Graduation Year</label>
+                <input type="number" id="profile-year" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Department</label>
+                <input type="text" id="profile-department" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Current Company</label>
+                <input type="text" id="profile-company" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Current Position</label>
+                <input type="text" id="profile-position" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <select id="profile-state" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">Select State/Province</option>
+                        <!-- US States -->
+                        <optgroup label="United States">
+                            <option value="AL, USA">Alabama</option>
+                            <option value="AK, USA">Alaska</option>
+                            <option value="AZ, USA">Arizona</option>
+                            <option value="AR, USA">Arkansas</option>
+                            <option value="CA, USA">California</option>
+                            <option value="CO, USA">Colorado</option>
+                            <option value="CT, USA">Connecticut</option>
+                            <option value="DE, USA">Delaware</option>
+                            <option value="FL, USA">Florida</option>
+                            <option value="GA, USA">Georgia</option>
+                            <option value="HI, USA">Hawaii</option>
+                            <option value="ID, USA">Idaho</option>
+                            <option value="IL, USA">Illinois</option>
+                            <option value="IN, USA">Indiana</option>
+                            <option value="IA, USA">Iowa</option>
+                            <option value="KS, USA">Kansas</option>
+                            <option value="KY, USA">Kentucky</option>
+                            <option value="LA, USA">Louisiana</option>
+                            <option value="ME, USA">Maine</option>
+                            <option value="MD, USA">Maryland</option>
+                            <option value="MA, USA">Massachusetts</option>
+                            <option value="MI, USA">Michigan</option>
+                            <option value="MN, USA">Minnesota</option>
+                            <option value="MS, USA">Mississippi</option>
+                            <option value="MO, USA">Missouri</option>
+                            <option value="MT, USA">Montana</option>
+                            <option value="NE, USA">Nebraska</option>
+                            <option value="NV, USA">Nevada</option>
+                            <option value="NH, USA">New Hampshire</option>
+                            <option value="NJ, USA">New Jersey</option>
+                            <option value="NM, USA">New Mexico</option>
+                            <option value="NY, USA">New York</option>
+                            <option value="NC, USA">North Carolina</option>
+                            <option value="ND, USA">North Dakota</option>
+                            <option value="OH, USA">Ohio</option>
+                            <option value="OK, USA">Oklahoma</option>
+                            <option value="OR, USA">Oregon</option>
+                            <option value="PA, USA">Pennsylvania</option>
+                            <option value="RI, USA">Rhode Island</option>
+                            <option value="SC, USA">South Carolina</option>
+                            <option value="SD, USA">South Dakota</option>
+                            <option value="TN, USA">Tennessee</option>
+                            <option value="TX, USA">Texas</option>
+                            <option value="UT, USA">Utah</option>
+                            <option value="VT, USA">Vermont</option>
+                            <option value="VA, USA">Virginia</option>
+                            <option value="WA, USA">Washington</option>
+                            <option value="WV, USA">West Virginia</option>
+                            <option value="WI, USA">Wisconsin</option>
+                            <option value="WY, USA">Wyoming</option>
+                        </optgroup>
+                        <!-- Indian States -->
+                        <optgroup label="India">
+                            <option value="Andhra Pradesh, India">Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh, India">Arunachal Pradesh</option>
+                            <option value="Assam, India">Assam</option>
+                            <option value="Bihar, India">Bihar</option>
+                            <option value="Chhattisgarh, India">Chhattisgarh</option>
+                            <option value="Goa, India">Goa</option>
+                            <option value="Gujarat, India">Gujarat</option>
+                            <option value="Haryana, India">Haryana</option>
+                            <option value="Himachal Pradesh, India">Himachal Pradesh</option>
+                            <option value="Himachal Pradesh, India">Jammu & Kashmir</option>
+                            <option value="Jharkhand, India">Jharkhand</option>
+                            <option value="Karnataka, India">Karnataka</option>
+                            <option value="Kerala, India">Kerala</option>
+                            <option value="Madhya Pradesh, India">Madhya Pradesh</option>
+                            <option value="Maharashtra, India">Maharashtra</option>
+                            <option value="Manipur, India">Manipur</option>
+                            <option value="Meghalaya, India">Meghalaya</option>
+                            <option value="Mizoram, India">Mizoram</option>
+                            <option value="Nagaland, India">Nagaland</option>
+                            <option value="Odisha, India">Odisha</option>
+                            <option value="Punjab, India">Punjab</option>
+                            <option value="Rajasthan, India">Rajasthan</option>
+                            <option value="Sikkim, India">Sikkim</option>
+                            <option value="Tamil Nadu, India">Tamil Nadu</option>
+                            <option value="Telangana, India">Telangana</option>
+                            <option value="Tripura, India">Tripura</option>
+                            <option value="Uttar Pradesh, India">Uttar Pradesh</option>
+                            <option value="Uttarakhand, India">Uttarakhand</option>
+                            <option value="West Bengal, India">West Bengal</option>
+                            <option value="Delhi, India">Delhi</option>
+                        </optgroup>
+                        <!-- Canadian Provinces -->
+                        <optgroup label="Canada">
+                            <option value="Alberta, Canada">Alberta</option>
+                            <option value="British Columbia, Canada">British Columbia</option>
+                            <option value="Manitoba, Canada">Manitoba</option>
+                            <option value="New Brunswick, Canada">New Brunswick</option>
+                            <option value="Newfoundland and Labrador, Canada">Newfoundland and Labrador</option>
+                            <option value="Nova Scotia, Canada">Nova Scotia</option>
+                            <option value="Ontario, Canada">Ontario</option>
+                            <option value="Prince Edward Island, Canada">Prince Edward Island</option>
+                            <option value="Quebec, Canada">Quebec</option>
+                            <option value="Saskatchewan, Canada">Saskatchewan</option>
+                        </optgroup>
+                        <!-- UK -->
+                        <optgroup label="United Kingdom">
+                            <option value="England, UK">England</option>
+                            <option value="Scotland, UK">Scotland</option>
+                            <option value="Wales, UK">Wales</option>
+                            <option value="Northern Ireland, UK">Northern Ireland</option>
+                        </optgroup>
+                        <!-- Other Countries -->
+                        <optgroup label="Other Countries">
+                            <option value="Australia">Australia</option>
+                            <option value="Germany">Germany</option>
+                            <option value="France">France</option>
+                            <option value="Japan">Japan</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="UAE">United Arab Emirates</option>
+                            <option value="Other">Other</option>
+                        </optgroup>
+                    </select>
+                    <input type="text" id="profile-location-custom" placeholder="Enter custom location" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 hidden">
+                </div>
+                <input type="hidden" id="profile-location" name="location">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">LinkedIn URL</label>
+                <input type="url" id="profile-linkedin" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+        <div class="mt-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Bio</label>
+            <textarea id="profile-bio" rows="4" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+        <div class="mt-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Skills (comma-separated)</label>
+            <input type="text" id="profile-skills" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder="JavaScript, Python, Project Management">
+        </div>
+        <div class="mt-6 flex items-center">
+            <input type="checkbox" id="profile-mentor" class="mr-2">
+            <label for="profile-mentor" class="text-gray-700">Available for mentoring</label>
+            <span class="ml-2 text-xs text-gray-500">(Note: Setting saved locally, database schema pending)</span>
+        </div>
+        <div class="mt-8">
+            <button type="submit" id="update-profile-btn" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300">
+                <span id="update-btn-text">Update Profile</span>
+                <div id="update-loading" class="loading mx-auto hidden"></div>
+            </button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Network Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover { background-color: rgba(255,255,255,0.1); }
+        .profile-pic { width: 60px; height: 60px; object-fit: cover; }
+        .stats-card { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); }
+        .hidden { display: none !important; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .loading { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom styles for mentorship and analytics */
+        .mentorship-tab-content { transition: all 0.3s ease; }
+        .stats-card-hover { transition: all 0.3s ease; }
+        .stats-card-hover:hover { transform: translateY(-1px); }
+        
+        /* Responsive table */
+        @media (max-width: 768px) {
+            .overflow-x-auto table { font-size: 0.875rem; }
+        }
+        
+        /* Enhanced card animations */
+        .card-hover { 
+            transition: all 0.3s ease; 
+            border: 1px solid transparent;
+        }
+        .card-hover:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+        
+        /* Better form styling */
+        input:focus, textarea:focus, select:focus {
+            box-shadow: 0 0 0 2px rgb(59, 130, 246, 0.5);
+            border-color: rgb(59, 130, 246);
+            outline: none;
+        }
+        
+        /* Navigation active state */
+        .nav-item.active { background-color: rgba(255,255,255,0.2); }
+        
+        /* Status badges */
+        .status-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .status-online { background-color: rgb(209, 250, 229); color: rgb(5, 150, 105); }
+        .status-away { background-color: rgb(254, 243, 199); color: rgb(217, 119, 6); }
+        .status-offline { background-color: rgb(243, 244, 246); color: rgb(75, 85, 99); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav id="navbar" class="gradient-bg text-white p-4 shadow-lg hidden">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">AlumniNet</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button onclick="showSection('dashboard')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </button>
+                <button onclick="showSection('profile')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-user mr-2"></i>Profile
+                </button>
+                <button onclick="showSection('network')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-users mr-2"></i>Network
+                </button>
+                <button onclick="showSection('events')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-calendar mr-2"></i>Events
+                </button>
+                <button onclick="showSection('mentorship')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-graduation-cap mr-2"></i>Mentorship
+                </button>
+                <button onclick="showSection('analytics')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-chart-bar mr-2"></i>Analytics
+                </button>
+                <button onclick="signOut()" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Authentication Section -->
+    <div id="auth-section" class="min-h-screen gradient-bg flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">AlumniNet</h1>
+                <p class="text-gray-600 mt-2">Connect with your alumni network</p>
+                
+                <!-- Debug Button -->
+                <button onclick="testDatabaseConnection()" class="mt-2 text-xs text-blue-500 hover:text-blue-700 underline">
+                    🔧 Test Database Connection
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Sign In</h2>
+                <form onsubmit="signIn(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="login-email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                        <input type="password" id="login-password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                        <span id="login-btn-text">Sign In</span>
+                        <div id="login-loading" class="loading mx-auto hidden"></div>
+                    </button>
+                </form>
+                <p class="text-center mt-4">
+                    Don't have an account? 
+                    <button onclick="toggleAuthMode()" class="text-blue-500 hover:underline">Sign Up</button>
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="hidden">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Create Account</h2>
+                <form onsubmit="signUp(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                        <input type="text" id="signup-name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="signup-email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                        <input type="password" id="signup-password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Graduation Year</label>
+                        <input type="number" id="signup-year" required min="1950" max="2030" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300">
+                        <span id="signup-btn-text">Create Account</span>
+                        <div id="signup-loading" class="loading mx-auto hidden"></div>
+                    </button>
+                </form>
+                <p class="text-center mt-4">
+                    Already have an account? 
+                    <button onclick="toggleAuthMode()" class="text-blue-500 hover:underline">Sign In</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="container mx-auto p-6 hidden">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome back, <span id="user-name">User</span>!</h1>
+            <p class="text-gray-600">Here's what's happening in your alumni network</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Total Alumni</h3>
+                        <p class="text-2xl font-bold" id="total-alumni">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-green-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-calendar text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Upcoming Events</h3>
+                        <p class="text-2xl font-bold" id="upcoming-events">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-handshake text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Connections</h3>
+                        <p class="text-2xl font-bold" id="connections-count">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-orange-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-briefcase text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Job Opportunities</h3>
+                        <p class="text-2xl font-bold">12</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Alumni by Industry</h3>
+                <canvas id="industryChart" width="400" height="200"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Graduation Years</h3>
+                <canvas id="yearChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Recent Alumni Activity</h3>
+                <button onclick="loadRecentActivity()" class="text-blue-500 hover:text-blue-700">
+                    <i class="fas fa-refresh"></i>
+                </button>
+            </div>
+            <div id="recent-activity" class="space-y-4">
+                <!-- Activity items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover cursor-pointer" onclick="showSection('network')">
+                <div class="bg-blue-500 text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-search text-xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Find Alumni</h3>
+                <p class="text-gray-600 text-sm">Search and connect with alumni in your network</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover cursor-pointer" onclick="showSection('events')">
+                <div class="bg-green-500 text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-calendar-plus text-xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Create Event</h3>
+                <p class="text-gray-600 text-sm">Organize networking events and reunions</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover cursor-pointer" onclick="showSection('mentorship')">
+                <div class="bg-purple-500 text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-handshake text-xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Find Mentors</h3>
+                <p class="text-gray-600 text-sm">Connect with experienced alumni for guidance</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div id="profile-section" class="container mx-auto p-6 hidden">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-bold mb-6">My Profile</h2>
+            <form onsubmit="updateProfile(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                        <input type="text" id="profile-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="profile-email" disabled class="w-full px-3 py-2 border rounded-lg bg-gray-100">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Graduation Year</label>
+                        <input type="number" id="profile-year" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Department</label>
+                        <input type="text" id="profile-department" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Current Company</label>
+                        <input type="text" id="profile-company" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Current Position</label>
+                        <input type="text" id="profile-position" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                        <input type="text" id="profile-location" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">LinkedIn URL</label>
+                        <input type="url" id="profile-linkedin" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Bio</label>
+                    <textarea id="profile-bio" rows="4" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Skills (comma-separated)</label>
+                    <input type="text" id="profile-skills" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder="JavaScript, Python, Project Management">
+                </div>
+                <div class="mt-6 flex items-center">
+                    <input type="checkbox" id="profile-mentor" class="mr-2">
+                    <label for="profile-mentor" class="text-gray-700">Available for mentoring</label>
+                </div>
+                <div class="mt-8">
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300">
+                        Update Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Network Section -->
+    <div id="network-section" class="container mx-auto p-6 hidden">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4">Alumni Network</h2>
+            
+            <!-- Search and Filters -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input type="text" id="search-alumni" placeholder="Search alumni..." class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    <select id="filter-year" class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">All Years</option>
+                    </select>
+                    <select id="filter-department" class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">All Departments</option>
+                    </select>
+                    <button onclick="searchAlumni()" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alumni Grid -->
+        <div id="alumni-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Alumni cards will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div id="events-section" class="container mx-auto p-6 hidden">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4">Events</h2>
+            <button onclick="showCreateEventModal()" class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300">
+                <i class="fas fa-plus mr-2"></i>Create Event
+            </button>
+        </div>
+
+        <!-- Events Grid -->
+        <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Event cards will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Mentorship Section -->
+    <div id="mentorship-section" class="container mx-auto p-6 hidden">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4">Mentorship Program</h2>
+            <div class="flex space-x-4">
+                <button onclick="showMentorshipTab('find-mentors')" id="find-mentors-tab" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                    Find Mentors
+                </button>
+                <button onclick="showMentorshipTab('be-mentor')" id="be-mentor-tab" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300">
+                    Become a Mentor
+                </button>
+                <button onclick="showMentorshipTab('my-connections')" id="my-connections-tab" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300">
+                    My Connections
+                </button>
+            </div>
+        </div>
+
+        <!-- Find Mentors Tab -->
+        <div id="find-mentors-content" class="mentorship-tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-lg font-semibold mb-4">Search for Mentors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="mentor-search" placeholder="Search by name or company..." class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    <select id="mentor-industry" class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">All Industries</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <button onclick="searchMentors()" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                        Search
+                    </button>
+                </div>
+            </div>
+            <div id="mentors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Mentor cards will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Be a Mentor Tab -->
+        <div id="be-mentor-content" class="mentorship-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Join as a Mentor</h3>
+                <form onsubmit="becomeMentor(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Years of Experience</label>
+                            <input type="number" id="mentor-experience" min="1" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Expertise Areas</label>
+                            <input type="text" id="mentor-expertise" placeholder="e.g., Software Development, Marketing" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Mentoring Bio</label>
+                        <textarea id="mentor-bio" rows="4" placeholder="Tell potential mentees about your experience and what you can help with..." class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Available Time Slots</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2" value="weekday-morning"> Weekday Mornings
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2" value="weekday-evening"> Weekday Evenings
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2" value="weekend"> Weekends
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button type="submit" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition duration-300">
+                            Become a Mentor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Connections Tab -->
+        <div id="my-connections-content" class="mentorship-tab-content hidden">
+            <div id="mentorship-connections" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Mentorship connections will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div id="analytics-section" class="container mx-auto p-6 hidden">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4">Alumni Analytics</h2>
+            <p class="text-gray-600">Comprehensive insights about your alumni network</p>
+        </div>
+
+        <!-- Advanced Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-gray-500 text-sm">Network Growth</h3>
+                        <p class="text-2xl font-bold" id="network-growth">+12%</p>
+                        <p class="text-green-500 text-sm">vs last month</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-chart-line text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-gray-500 text-sm">Active Members</h3>
+                        <p class="text-2xl font-bold" id="active-members">-</p>
+                        <p class="text-blue-500 text-sm">Last 30 days</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-users text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-gray-500 text-sm">Event Attendance</h3>
+                        <p class="text-2xl font-bold" id="event-attendance">78%</p>
+                        <p class="text-purple-500 text-sm">Average rate</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <i class="fas fa-calendar-check text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-gray-500 text-sm">Connections Made</h3>
+                        <p class="text-2xl font-bold" id="connections-made">156</p>
+                        <p class="text-orange-500 text-sm">This quarter</p>
+                    </div>
+                    <div class="bg-orange-100 p-3 rounded-full">
+                        <i class="fas fa-handshake text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Geographic Distribution</h3>
+                <canvas id="locationChart" width="400" height="300"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Career Progression</h3>
+                <canvas id="careerChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Alumni Insights Table -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Top Companies by Alumni Count</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left p-3">Company</th>
+                            <th class="text-left p-3">Alumni Count</th>
+                            <th class="text-left p-3">Avg. Years Experience</th>
+                            <th class="text-left p-3">Growth Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companies-table">
+                        <!-- Company data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Creation Modal -->
+    <div id="event-modal" class="fixed inset-0 modal-overlay hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold mb-4">Create New Event</h3>
+                <form onsubmit="createEvent(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Event Title</label>
+                        <input type="text" id="event-title" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Description</label>
+                        <textarea id="event-description" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Date & Time</label>
+                        <input type="datetime-local" id="event-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                        <input type="text" id="event-location" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="hideCreateEventModal()" class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            Create Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Replace with your actual Supabase credentials
+        // Get these from your Supabase project dashboard
+        const SUPABASE_URL = 'https://yrmvtofxeeqcuxihgdgv.supabase.co'; // e.g., 'https://xyzcompany.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybXZ0b2Z4ZWVxY3V4aWhnZGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MzQ0ODUsImV4cCI6MjA2NzAxMDQ4NX0.3QSQ8fbuehTPT9gZpOeT9MAmm9e58GkvlYkqOSzbO8k'; // Your anon/public key
+        
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let currentUserProfile = null;
+
+        // Database setup helper (for debugging)
+        async function checkDatabaseSetup() {
+            console.log('Checking database setup...');
+            
+            try {
+                // Test if profiles table exists and is accessible
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    console.error('Profiles table error:', error);
+                    if (error.code === 'PGRST116') {
+                        alert('❌ The profiles table does not exist. Please create it in your Supabase dashboard.');
+                        return false;
+                    }
+                    if (error.code === '42501') {
+                        alert('❌ Permission denied to profiles table. Please check your Row Level Security (RLS) policies.');
+                        return false;
+                    }
+                    alert('❌ Database error: ' + error.message);
+                    return false;
+                }
+                
+                console.log('✅ Database setup OK');
+                return true;
+            } catch (err) {
+                console.error('Database setup check failed:', err);
+                alert('❌ Database connection failed: ' + err.message);
+                return false;
+            }
+        }
+
+        // Test function to create the tables
+        async function createTablesIfNeeded() {
+            console.log('Creating tables if needed...');
+            
+            // This will help us understand what's missing
+            const testQueries = [
+                { name: 'profiles', query: () => supabase.from('profiles').select('count', { count: 'exact', head: true }) },
+                { name: 'events', query: () => supabase.from('events').select('count', { count: 'exact', head: true }) }
+            ];
+            
+            for (const test of testQueries) {
+                try {
+                    const { data, error } = await test.query();
+                    if (error) {
+                        console.error(`❌ Table '${test.name}' error:`, error);
+                        alert(`❌ Table '${test.name}' has issues: ${error.message}`);
+                    } else {
+                        console.log(`✅ Table '${test.name}' is accessible`);
+                    }
+                } catch (err) {
+                    console.error(`❌ Failed to test table '${test.name}':`, err);
+            }
+        }
+
+        // Manual database connection test
+        async function testDatabaseConnection() {
+            console.log('🧪 Manual database test started...');
+            alert('🧪 Testing database connection... Check the console for details.');
+            
+            await createTablesIfNeeded();
+            await checkDatabaseSetup();
+            
+            // Test auth signup without profile creation
+            try {
+                console.log('🧪 Testing auth signup...');
+                const testEmail = `test_${Date.now()}@example.com`;
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: testEmail,
+                    password: 'testpassword123',
+                    options: {
+                        data: { full_name: 'Test User' }
+                    }
+                });
+                
+                console.log('🧪 Auth signup test result:', { data, error });
+                
+                if (error) {
+                    alert('❌ Auth signup failed: ' + error.message);
+                } else {
+                    alert('✅ Auth signup works! The issue might be with the profiles table.');
+                }
+            } catch (err) {
+                console.error('🧪 Auth test failed:', err);
+                alert('❌ Auth test failed: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

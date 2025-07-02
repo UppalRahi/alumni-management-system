@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Network Platform</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav id="navbar" class="gradient-bg text-white p-4 shadow-lg hidden">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">AlumniNet</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button onclick="showSection('dashboard')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </button>
+                <button onclick="showSection('profile')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-user mr-2"></i>Profile
+                </button>
+                <button onclick="showSection('network')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-users mr-2"></i>Network
+                </button>
+                <button onclick="showSection('events')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-calendar mr-2"></i>Events
+                </button>
+                <button onclick="showSection('mentorship')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-graduation-cap mr-2"></i>Mentorship
+                </button>
+                <button onclick="showSection('analytics')" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-chart-bar mr-2"></i>Analytics
+                </button>
+                <button onclick="signOut()" class="nav-item px-3 py-2 rounded-lg">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Authentication Section -->
+    <div id="auth-section" class="min-h-screen gradient-bg flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">AlumniNet</h1>
+                <p class="text-gray-600 mt-2">Connect with your alumni network</p>
+                
+                <!-- Debug Button -->
+                <button onclick="testDatabaseConnection()" class="mt-2 text-xs text-blue-500 hover:text-blue-700 underline">
+                    🔧 Test Database Connection
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Sign In</h2>
+                <form onsubmit="signIn(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="login-email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                        <input type="password" id="login-password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                        <span id="login-btn-text">Sign In</span>
+                        <div id="login-loading" class="loading mx-auto hidden"></div>
+                    </button>
+                </form>
+                <p class="text-center mt-4">
+                    Don't have an account? 
+                    <button onclick="toggleAuthMode()" class="text-blue-500 hover:underline">Sign Up</button>
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="hidden">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Create Account</h2>
+                <form onsubmit="signUp(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                        <input type="text" id="signup-name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="signup-email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                        <input type="password" id="signup-password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Graduation Year</label>
+                        <input type="number" id="signup-year" required min="1950" max="2030" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300">
+                        <span id="signup-btn-text">Create Account</span>
+                        <div id="signup-loading" class="loading mx-auto hidden"></div>
+                    </button>
+                </form>
+                <p class="text-center mt-4">
+                    Already have an account? 
+                    <button onclick="toggleAuthMode()" class="text-blue-500 hover:underline">Sign In</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Sections -->
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="container mx-auto p-6 hidden">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome back, <span id="user-name">User</span>!</h1>
+            <p class="text-gray-600">Here's what's happening in your alumni network</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Total Alumni</h3>
+                        <p class="text-2xl font-bold" id="total-alumni">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-green-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-calendar text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Upcoming Events</h3>
+                        <p class="text-2xl font-bold" id="upcoming-events">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-handshake text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Connections</h3>
+                        <p class="text-2xl font-bold" id="connections-count">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-orange-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-briefcase text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm">Job Opportunities</h3>
+                        <p class="text-2xl font-bold">12</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Alumni by Industry</h3>
+                <div class="chart-container">
+                    <canvas id="industryChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Graduation Years</h3>
+                <div class="chart-container">
+                    <canvas id="yearChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Recent Alumni Activity</h3>
+                <button onclick="loadRecentActivity()" class="text-blue-500 hover:text-blue-700">
+                    <i class="fas fa-refresh"></i>
+                </button>
+            </div>
+            <div id="recent-activity" class="space-y-4">
+                <!-- Activity items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover cursor-pointer" onclick="showSection('network')">
+                <div class="bg-blue-500 text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-search text-xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Find Alumni</h3>
+                <p class="text-gray-600 text-sm">Search and connect with alumni in your network</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover cursor-pointer" onclick="showSection('events')">
+                <div class="bg-green-500 text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-calendar-plus text-xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Create Event</h3>
+                <p class="text-gray-600 text-sm">Organize networking events and reunions</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover cursor-pointer" onclick="showSection('mentorship')">
+                <div class="bg-purple-500 text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-handshake text-xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Find Mentors</h3>
+                <p class="text-gray-600 text-sm">Connect with experienced alumni for guidance</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include all page sections -->
+    <!-- Profile Section -->
+    <div id="profile-section" class="container mx-auto p-6 hidden"></div>
+    
+    <!-- Network Section -->
+    <div id="network-section" class="container mx-auto p-6 hidden"></div>
+    
+    <!-- Events Section -->
+    <div id="events-section" class="container mx-auto p-6 hidden"></div>
+    
+    <!-- Mentorship Section -->
+    <div id="mentorship-section" class="container mx-auto p-6 hidden"></div>
+    
+    <!-- Analytics Section -->
+    <div id="analytics-section" class="container mx-auto p-6 hidden"></div>
+
+    <!-- Event Creation Modal -->
+    <div id="event-modal" class="fixed inset-0 modal-overlay hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold mb-4">Create New Event</h3>
+                <form onsubmit="createEvent(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Event Title</label>
+                        <input type="text" id="event-title" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Description</label>
+                        <textarea id="event-description" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Date & Time</label>
+                        <input type="datetime-local" id="event-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                        <input type="text" id="event-location" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="hideCreateEventModal()" class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            Create Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/mentorship.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

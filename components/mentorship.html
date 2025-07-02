@@ -1,0 +1,87 @@
+<div class="mb-6">
+    <h2 class="text-2xl font-bold mb-4">Mentorship Program</h2>
+    <div class="flex space-x-4">
+        <button onclick="showMentorshipTab('find-mentors')" id="find-mentors-tab" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+            Find Mentors
+        </button>
+        <button onclick="showMentorshipTab('be-mentor')" id="be-mentor-tab" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300">
+            Become a Mentor
+        </button>
+        <button onclick="showMentorshipTab('my-connections')" id="my-connections-tab" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300">
+            My Connections
+        </button>
+    </div>
+</div>
+
+<!-- Find Mentors Tab -->
+<div id="find-mentors-content" class="mentorship-tab-content">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Search for Mentors</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="text" id="mentor-search" placeholder="Search by name or company..." class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            <select id="mentor-industry" class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <option value="">All Industries</option>
+                <option value="Technology">Technology</option>
+                <option value="Finance">Finance</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Education">Education</option>
+                <option value="Other">Other</option>
+            </select>
+            <button onclick="searchMentors()" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                Search
+            </button>
+        </div>
+    </div>
+    <div id="mentors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Mentor cards will be loaded here -->
+    </div>
+</div>
+
+<!-- Be a Mentor Tab -->
+<div id="be-mentor-content" class="mentorship-tab-content hidden">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold mb-4">Join as a Mentor</h3>
+        <form onsubmit="becomeMentor(event)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Years of Experience</label>
+                    <input type="number" id="mentor-experience" min="1" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Expertise Areas</label>
+                    <input type="text" id="mentor-expertise" placeholder="e.g., Software Development, Marketing" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Mentoring Bio</label>
+                <textarea id="mentor-bio" rows="4" placeholder="Tell potential mentees about your experience and what you can help with..." class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+            <div class="mt-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Available Time Slots</label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2" value="weekday-morning"> Weekday Mornings
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2" value="weekday-evening"> Weekday Evenings
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2" value="weekend"> Weekends
+                    </label>
+                </div>
+            </div>
+            <div class="mt-6">
+                <button type="submit" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition duration-300">
+                    Become a Mentor
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- My Connections Tab -->
+<div id="my-connections-content" class="mentorship-tab-content hidden">
+    <div id="mentorship-connections" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Mentorship connections will be loaded here -->
+    </div>
+</div>

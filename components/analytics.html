@@ -1,0 +1,88 @@
+<div class="mb-6">
+    <h2 class="text-2xl font-bold mb-4">Alumni Analytics</h2>
+    <p class="text-gray-600">Comprehensive insights about your alumni network</p>
+</div>
+
+<!-- Advanced Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-gray-500 text-sm">Network Growth</h3>
+                <p class="text-2xl font-bold" id="network-growth">+12%</p>
+                <p class="text-green-500 text-sm">vs last month</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+                <i class="fas fa-chart-line text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-gray-500 text-sm">Active Members</h3>
+                <p class="text-2xl font-bold" id="active-members">-</p>
+                <p class="text-blue-500 text-sm">Last 30 days</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <i class="fas fa-users text-blue-600"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-gray-500 text-sm">Event Attendance</h3>
+                <p class="text-2xl font-bold" id="event-attendance">78%</p>
+                <p class="text-purple-500 text-sm">Average rate</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+                <i class="fas fa-calendar-check text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-gray-500 text-sm">Connections Made</h3>
+                <p class="text-2xl font-bold" id="connections-made">156</p>
+                <p class="text-orange-500 text-sm">This quarter</p>
+            </div>
+            <div class="bg-orange-100 p-3 rounded-full">
+                <i class="fas fa-handshake text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Analytics Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold mb-4">Geographic Distribution</h3>
+        <canvas id="locationChart" width="400" height="300"></canvas>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold mb-4">Career Progression</h3>
+        <canvas id="careerChart" width="400" height="300"></canvas>
+    </div>
+</div>
+
+<!-- Alumni Insights Table -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold mb-4">Top Companies by Alumni Count</h3>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="text-left p-3">Company</th>
+                    <th class="text-left p-3">Alumni Count</th>
+                    <th class="text-left p-3">Avg. Years Experience</th>
+                    <th class="text-left p-3">Growth Rate</th>
+                </tr>
+            </thead>
+            <tbody id="companies-table">
+                <!-- Company data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
